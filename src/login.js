@@ -1,104 +1,94 @@
-import React, { Component } from "react";
-import { Row, FormGroup, FormControl, Button } from 'react-bootstrap';
-import { isEmail, isEmpty, isLength, isContainWhiteSpace } from './shared/validator';
+import React from 'react';
 
-class Login extends Component {
+import { Nav, Navbar, NavItem } from "react-bootstrap";
+import { LinkContainer } from "react-router-bootstrap";
 
-    constructor(props) {
-        super(props)
-
-        this.state = {
-            formData: {}, // Contains login form data
-            errors: {}, // Contains login field errors
-            formSubmitted: false, // Indicates submit status of login form
-            loading: false // Indicates in progress state of login form
-        }
+class Login extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      error: ''
     }
+  }
 
-    handleInputChange = (event) => {
-        const target = event.target;
-        const value = target.value;
-        const name = target.name;
+  onChangeName = (e) => {
+    this.setState({ name: e.target.value })
+  }
 
-        let { formData } = this.state;
-        formData[name] = value;
+  onChangeEmail = (e) => {
+    this.setState({ email: e.target.value })
+  }
 
-        this.setState({
-            formData: formData
-        });
-    }
+  onChangePhone = (e) => {
+    this.setState({ phone: e.target.value })
+  }
 
-    validateLoginForm = (e) => {
+  onSubmit = (e) => {
+    let { history } = this.props
 
-        let errors = {};
-        const { formData } = this.state;
+    let olddata = localStorage.getItem('formdata')
+    let oldArr = JSON.parse(olddata)
+    let error = false
+    oldArr.map(arr => {
+      if (this.state.email.length > 0 && this.state.password.length > 0) {
+        if (arr.email == this.state.email && (arr.password == this.state.password)) {
 
-        if (isEmpty(formData.email)) {
-            errors.email = "Email can't be blank";
-        } else if (!isEmail(formData.email)) {
-            errors.email = "Please enter a valid email";
-        }
-
-        if (isEmpty(formData.password)) {
-            errors.password = "Password can't be blank";
-        }  else if (isContainWhiteSpace(formData.password)) {
-            errors.password = "Password should not contain white spaces";
-        } else if (!isLength(formData.password, { gte: 6, lte: 16, trim: true })) {
-            errors.password = "Password's length must between 6 to 16";
-        }
-
-        if (isEmpty(errors)) {
-            return true;
+          history.push({ pathname: "/welcome", user: this.state.email });
+          error = false
         } else {
-            return errors;
+          error = true
         }
+      }
     }
-
-    login = (e) => {
-
-        e.preventDefault();
-
-        let errors = this.validateLoginForm();
-
-        if(errors === true){
-            alert("You are successfully signed in...");
-            window.location.reload()
-        } else {
-            this.setState({
-                errors: errors,
-                formSubmitted: true
-            });
-        }
+    )
+    if (error === true) {
+      this.setState({ error: 'Please check your email or password' })
     }
+  }
 
-    render() {
+  onChangePassword = (e) => {
+    this.setState({ password: e.target.value })
+  }
 
-        const { errors, formSubmitted } = this.state;
 
-        return (
-            <div className="Login">
-                <Row>
-                    <form onSubmit={this.login}>
-                        <FormGroup controlId="email" validationState={ formSubmitted ? (errors.email ? 'error' : 'success') : null }>
-                            <label>Email</label>
-                            <FormControl type="text" name="email" placeholder="Enter your email" onChange={this.handleInputChange} />
-                        { errors.email &&
-                            <div>{errors.email}</div>
-                        }
-                        </FormGroup>
-                        <FormGroup controlId="password" validationState={ formSubmitted ? (errors.password ? 'error' : 'success') : null }>
-                            <label>Password</label>
-                            <FormControl type="password" name="password" placeholder="Enter your password" onChange={this.handleInputChange} />
-                        { errors.password &&
-                            <div>{errors.password}</div>
-                        }
-                        </FormGroup>
-                        <Button type="submit" bsStyle="primary">Sign-In</Button>
-                    </form>
-                </Row>
-            </div>
-        )
-    }
+  render() {
+
+    return (
+
+      <div className="p-4 ">
+       
+        <form onSubmit={this.onSubmit}>
+          <p className="error">
+            {this.state.error}
+          </p>
+          <div className="form-group">
+
+            <input type="radio" checked id="customer" name="customer" value="Customer" />
+            <label className="me-4 p-2">Customer</label>
+            <input type="radio" id="applicant" name="customer" value="Applicant" />
+            <label className="me-4 p-2">Applicant</label>
+
+          </div>
+
+          <div className="form-group mt-2">
+            <label>EMail</label>
+            <input type="email" className="form-control" value={this.state.email} onChange={this.onChangeEmail} required />
+          </div>
+          <div className="form-group mt-2">
+            <label>Password</label>
+            <input type="password" className="form-control" value={this.state.password} onChange={this.onChangePassword} required />
+          </div>
+          <button type="submit" className="btn btn-primary btn-block m-4" onClick={this.onSubmit}>Signin</button>
+          <button type="submit" className="btn btn-primary btn-block m-4" onClick={this.onRegister}>Cancel</button>
+        </form>
+      </div>
+
+    )
+  }
 }
 
-export default Login;
+export default Login
